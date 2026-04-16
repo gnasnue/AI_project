@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>커리어 코칭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F7F5;
+    --surface: #FFFFFF;
+    --surface2: #F0F0EC;
+    --border: #E4E4DF;
+    --text-primary: #1A1A18;
+    --text-secondary: #6B6B65;
+    --text-muted: #A8A8A0;
+    --accent: #2D5BFF;
+    --accent-light: #EEF2FF;
+    --accent-dim: rgba(45,91,255,0.12);
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --yellow: #CA8A04;
+    --yellow-light: #FEF9C3;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --nav-h: 64px;
+    --font: 'Pretendard', -apple-system, sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 0; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .status-time { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons span { font-size: 12px; color: var(--text-primary); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding-bottom: calc(var(--nav-h) + 16px); }
+  .screen.active { display: block; }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    height: var(--nav-h);
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; cursor: pointer; padding: 8px 4px;
+    transition: color 0.15s;
+    color: var(--text-muted);
+    border: none; background: none;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
+
+  /* ── SECTION HEADER ── */
+  .page-header {
+    padding: 20px 20px 0;
+  }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+  .page-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 10px; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 20px; text-transform: uppercase;
+  }
+  .badge-blue { background: var(--accent-light); color: var(--accent); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .badge-purple { background: var(--purple-light); color: var(--purple); }
+  .badge-gray { background: var(--surface2); color: var(--text-secondary); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .progress-bar {
+    height: 100%; border-radius: 99px; background: var(--accent);
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-bar.green { background: var(--green); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin: 20px 20px 10px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  /* ── BTN ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: var(--radius-sm); font-family: var(--font); cursor: pointer;
+    font-weight: 600; transition: all 0.15s; border: none;
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff; font-size: 14px; padding: 12px 20px;
+  }
+  .btn-primary:active { opacity: 0.85; }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text-primary); font-size: 13px; padding: 8px 14px;
+    border: 1px solid var(--border);
+  }
+  .btn-ghost {
+    background: transparent; color: var(--accent); font-size: 13px; padding: 6px 10px;
+  }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-flex; align-items: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 10px;
+    font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  }
+  .tag.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* ─────────────────────────────────────────
+     HOME SCREEN
+  ───────────────────────────────────────── */
+  .home-greeting {
+    padding: 20px 20px 0;
+  }
+  .home-date { font-size: 12px; font-family: var(--mono); color: var(--text-muted); margin-bottom: 4px; }
+  .home-name { font-size: 24px; font-weight: 700; }
+  .home-name em { font-style: normal; color: var(--accent); }
+  .home-tagline { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* Streak */
+  .streak-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 20px;
+  }
+  .streak-days {
+    display: flex; gap: 4px;
+  }
+  .streak-day {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    flex-direction: column; gap: 2px;
+  }
+  .streak-day.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .streak-day.today { border-color: var(--accent); color: var(--accent); }
+  .streak-info { margin-left: auto; text-align: right; }
+  .streak-count { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--accent); }
+  .streak-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+
+  /* Monthly summary card */
+  .monthly-summary {
+    margin: 0 20px;
+    background: var(--text-primary);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative; overflow: hidden;
+  }
+  .monthly-summary::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 100px; height: 100px;
+    background: rgba(45,91,255,0.3);
+    border-radius: 50%;
+    filter: blur(30px);
+  }
+  .monthly-summary-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; }
+  .monthly-summary-title { font-size: 15px; font-weight: 600; margin: 6px 0 12px; line-height: 1.4; }
+  .monthly-progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .monthly-pct { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+  .monthly-dday { font-size: 12px; opacity: 0.6; }
+  .monthly-bar { height: 4px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden; }
+  .monthly-bar-fill { height: 4px; background: #fff; border-radius: 99px; }
+
+  /* Daily actions */
+  .action-card {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .action-card-header {
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .action-card-title { font-size: 13px; font-weight: 600; }
+  .action-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .action-item:last-child { border-bottom: none; }
+  .action-item:active { background: var(--surface2); }
+  .action-checkbox {
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .action-checkbox.checked { background: var(--accent); border-color: var(--accent); }
+  .action-checkbox.checked::after {
+    content: '';
+    width: 10px; height: 6px;
+    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .action-text { font-size: 14px; line-height: 1.4; flex: 1; }
+  .action-text.done { text-decoration: line-through; color: var(--text-muted); }
+  .action-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .action-tag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent); }
+
+  /* AI Insight */
+  .insight-card {
+    margin: 0 20px;
+    background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%);
+    border: 1px solid #C7D2FE;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .insight-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .insight-icon { font-size: 16px; }
+  .insight-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+  .insight-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+  .insight-text strong { font-weight: 600; }
+
+  /* ─────────────────────────────────────────
+     GOALS SCREEN
+  ───────────────────────────────────────── */
+  .time-tabs {
+    display: flex; gap: 6px; padding: 16px 20px 0;
+  }
+  .time-tab {
+    flex: 1; text-align: center;
+    padding: 8px 0; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-secondary); transition: all 0.15s;
+  }
+  .time-tab.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  .goal-panel { display: none; }
+  .goal-panel.active { display: block; }
+
+  /* Yearly goal card */
+  .yearly-goal-card {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .goal-status-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .goal-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
+  .goal-meta { display: flex; gap: 12px; align-items: center; }
+  .goal-meta-item { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+  .goal-progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .goal-pct { font-size: 13px; font-weight: 700; font-family: var(--mono); color: var(--accent); }
+
+  /* Competency bars */
+  .competency-item { margin-bottom: 14px; }
+  .competency-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .competency-name { font-size: 13px; font-weight: 500; }
+  .competency-vals { font-size: 12px; font-family: var(--mono); color: var(--text-secondary); }
+  .competency-track {
+    height: 6px; background: var(--surface2); border-radius: 99px;
+    position: relative; overflow: visible;
+  }
+  .competency-current {
+    height: 6px; border-radius: 99px;
+    background: var(--accent); position: absolute; top: 0; left: 0;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .competency-target-marker {
+    position: absolute; top: -3px;
+    width: 2px; height: 12px; border-radius: 2px;
+    background: var(--text-muted);
+  }
+
+  /* Monthly milestone */
+  .milestone-card {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .milestone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .milestone-title { font-size: 14px; font-weight: 600; }
+  .milestone-month { font-size: 12px; font-family: var(--mono); color: var(--text-muted); }
+  .milestone-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .milestone-item:last-child { border-bottom: none; }
+  .milestone-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .milestone-check.done { background: var(--green); border-color: var(--green); }
+  .milestone-check.done::after {
+    content: '';
+    width: 8px; height: 5px;
+    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .milestone-text { font-size: 13px; flex: 1; }
+  .milestone-text.done { text-decoration: line-through; color: var(--text-muted); }
+  .milestone-count { font-size: 11px; font-family: var(--mono); color: var(--text-muted); }
+
+  /* Daily task list */
+  .daily-date-header {
+    padding: 0 20px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .daily-date-label { font-size: 13px; font-weight: 600; }
+  .daily-add-btn {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 300; cursor: pointer; border: none;
+  }
+  .daily-task {
+    margin: 0 20px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: background 0.1s;
+  }
+  .daily-task:active { background: var(--surface2); }
+  .daily-task-body { flex: 1; }
+  .daily-task-title { font-size: 13px; font-weight: 500; }
+  .daily-task-title.done { text-decoration: line-through; color: var(--text-muted); }
+  .daily-task-tags { display: flex; gap: 4px; margin-top: 5px; }
+
+  /* ─────────────────────────────────────────
+     RETROSPECTIVE SCREEN
+  ───────────────────────────────────────── */
+  .retro-filter {
+    display: flex; gap: 6px; padding: 12px 20px; overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .kpt-write-card {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .kpt-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .kpt-tab {
+    flex: 1; text-align: center; padding: 7px 4px;
+    border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  }
+  .kpt-tab.k.active { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .kpt-tab.p.active { background: var(--red-light); border-color: var(--red); color: var(--red); }
+  .kpt-tab.t.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .kpt-tab.etc.active { background: var(--yellow-light); border-color: var(--yellow); color: var(--yellow); }
+
+  .kpt-textarea {
+    width: 100%; height: 90px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); padding: 10px 12px;
+    font-family: var(--font); font-size: 13px; line-height: 1.6;
+    color: var(--text-primary); resize: none; outline: none;
+    transition: border-color 0.15s;
+  }
+  .kpt-textarea:focus { border-color: var(--accent); background: var(--surface); }
+  .kpt-submit-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .kpt-hint { font-size: 11px; color: var(--text-muted); }
+
+  /* Retro feed */
+  .retro-item {
+    margin: 0 20px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .retro-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .retro-item-date { font-size: 11px; font-family: var(--mono); color: var(--text-muted); }
+  .retro-item-type {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .retro-item-type.K { background: var(--green-light); color: var(--green); }
+  .retro-item-type.P { background: var(--red-light); color: var(--red); }
+  .retro-item-type.T { background: var(--accent-light); color: var(--accent); }
+  .retro-item-type.ETC { background: var(--yellow-light); color: var(--yellow); }
+  .retro-item-text { font-size: 13px; line-height: 1.6; color: var(--text-primary); margin-bottom: 8px; }
+  .retro-item-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* AI Pattern card */
+  .pattern-card {
+    margin: 0 20px;
+    background: var(--text-primary);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: #fff;
+  }
+  .pattern-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .pattern-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; }
+  .pattern-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .pattern-text { font-size: 13px; opacity: 0.75; line-height: 1.6; }
+  .pattern-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .pattern-chip {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 4px 10px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  /* ─────────────────────────────────────────
+     PROFILE SCREEN
+  ───────────────────────────────────────── */
+  .profile-hero {
+    padding: 20px 20px 0;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .profile-avatar {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 22px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .profile-info {}
+  .profile-name { font-size: 18px; font-weight: 700; }
+  .profile-role { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .profile-role strong { color: var(--text-primary); font-weight: 600; }
+
+  .keyword-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px; }
+
+  /* Roadmap timeline */
+  .roadmap-item {
+    display: flex; gap: 14px; padding: 0 20px;
+    position: relative;
+  }
+  .roadmap-item + .roadmap-item { margin-top: 0; }
+  .roadmap-line-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0; width: 20px;
+  }
+  .roadmap-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--accent-light);
+    flex-shrink: 0; margin-top: 4px;
+  }
+  .roadmap-dot.future { background: var(--surface2); border-color: var(--border); }
+  .roadmap-line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 24px; }
+  .roadmap-body { flex: 1; padding-bottom: 20px; }
+  .roadmap-year { font-size: 11px; font-family: var(--mono); font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+  .roadmap-text { font-size: 13px; font-weight: 500; line-height: 1.5; }
+
+  /* Radar / skill bars */
+  .skill-bar-item { margin-bottom: 12px; }
+  .skill-bar-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .skill-bar-name { font-size: 13px; font-weight: 500; }
+  .skill-bar-vals { font-size: 12px; font-family: var(--mono); }
+  .skill-bar-val-current { color: var(--accent); font-weight: 600; }
+  .skill-bar-val-target { color: var(--text-muted); }
+  .skill-track {
+    height: 8px; background: var(--surface2); border-radius: 99px;
+    position: relative; overflow: hidden;
+  }
+  .skill-fill {
+    height: 8px; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), #7B9FFF);
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  }
+  .skill-gap-label {
+    display: flex; justify-content: space-between; margin-top: 3px;
+  }
+  .skill-gap-text { font-size: 10px; color: var(--text-muted); }
+
+  /* ─────────────────────────────────────────
+     MODAL / OVERLAY
+  ───────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 200; display: none; align-items: flex-end;
+    max-width: 430px; left: 50%; transform: translateX(-50%);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    width: 100%; background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-handle {
+    width: 36px; height: 4px; background: var(--border);
+    border-radius: 99px; margin: 0 auto 16px;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+  .modal-input {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface2); padding: 12px;
+    font-family: var(--font); font-size: 14px; color: var(--text-primary);
+    outline: none; margin-bottom: 10px;
+  }
+  .modal-input:focus { border-color: var(--accent); background: var(--surface); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; line-height: 1.6; }
+
+  /* ── FADE IN ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active > * {
+    animation: fadeUp 0.25s ease both;
+  }
+  .screen.active > *:nth-child(2) { animation-delay: 0.04s; }
+  .screen.active > *:nth-child(3) { animation-delay: 0.08s; }
+  .screen.active > *:nth-child(4) { animation-delay: 0.12s; }
+  .screen.active > *:nth-child(5) { animation-delay: 0.16s; }
+  .screen.active > *:nth-child(6) { animation-delay: 0.20s; }
+  .screen.active > *:nth-child(7) { animation-delay: 0.24s; }
+
+  /* gap for sections */
+  .gap { height: 10px; }
+  .gap-sm { height: 6px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: calc(var(--nav-h) + 16px);
+    left: 50%; transform: translateX(-50%);
+    background: var(--text-primary); color: #fff;
+    padding: 10px 18px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span class="status-time" id="clock">9:41</span>
+  <div class="status-icons">
+    <span>●●●</span>
+    <span>WiFi</span>
+    <span>100%</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     HOME SCREEN
+═══════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="home-greeting">
+    <div class="home-date" id="home-date">2025년 6월 10일 화요일</div>
+    <div class="home-name">안녕하세요, <em>길동</em>님 👋</div>
+    <div class="home-tagline">오늘도 한 걸음씩 성장해봐요</div>
+  </div>
+
+  <!-- Streak -->
+  <div class="streak-row">
+    <div class="streak-days" id="streak-days"></div>
+    <div class="streak-info">
+      <div class="streak-count">🔥 12</div>
+      <div class="streak-label">연속 실천일</div>
+    </div>
+  </div>
+
+  <!-- Monthly summary -->
+  <div class="monthly-summary">
+    <div class="monthly-summary-label">📅 6월 이달의 마일스톤</div>
+    <div class="monthly-summary-title">도메인 전문성 심화 & 블로그 3편 작성</div>
+    <div class="monthly-progress-row">
+      <div class="monthly-pct">47%</div>
+      <div class="monthly-dday">D-21</div>
+    </div>
+    <div class="monthly-bar"><div class="monthly-bar-fill" style="width:47%"></div></div>
+  </div>
+
+  <div class="gap"></div>
+
+  <!-- AI Insight -->
+  <div class="insight-card" style="margin: 0 20px;">
+    <div class="insight-header">
+      <span class="insight-icon">✦</span>
+      <span class="insight-label">AI 인사이트</span>
+    </div>
+    <div class="insight-text">최근 3주 회고를 분석했어요. <strong>의사결정</strong>에서 "완벽주의로 인한 지연" 패턴이 반복되고 있어요. 오늘 작은 결정 하나를 <strong>3분 안에</strong> 내려보는 건 어떨까요?</div>
+  </div>
+
+  <div class="section-label">오늘의 액션 아이템</div>
+
+  <!-- Daily actions -->
+  <div class="action-card">
+    <div class="action-card-header">
+      <span class="action-card-title">Daily Tasks</span>
+      <span class="badge badge-blue">3개 중 1개 완료</span>
+    </div>
+    <div class="action-item" onclick="toggleAction(this)">
+      <div class="action-checkbox checked"></div>
+      <div style="flex:1">
+        <div class="action-text done">팀 회의에서 의견을 먼저 제시해보기</div>
+        <div class="action-meta"><span class="action-tag">루틴</span> &nbsp;의사결정 +3%</div>
+      </div>
+    </div>
+    <div class="action-item" onclick="toggleAction(this)">
+      <div class="action-checkbox"></div>
+      <div style="flex:1">
+        <div class="action-text">동료에게 내 업무 경과를 1문단으로 설명하기</div>
+        <div class="action-meta"><span class="action-tag">루틴</span> &nbsp;커뮤니케이션 +4%</div>
+      </div>
+    </div>
+    <div class="action-item" onclick="toggleAction(this)">
+      <div class="action-checkbox"></div>
+      <div style="flex:1">
+        <div class="action-text">업계 뉴스레터 1개 읽고 인사이트 메모하기</div>
+        <div class="action-meta"><span class="action-tag">루틴</span> &nbsp;도메인 전문성 +3%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <!-- Competency quick view -->
+  <div class="card" style="margin: 0 20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:600;">역량 현황</span>
+      <button class="btn-ghost btn" onclick="switchTab('profile')" style="font-size:12px;padding:4px 8px;">전체 보기 →</button>
+    </div>
+    <div class="competency-item">
+      <div class="competency-header">
+        <span class="competency-name">의사결정 & 실행력</span>
+        <span class="competency-vals">27% → 목표 80%</span>
+      </div>
+      <div class="competency-track" style="height:6px;background:var(--surface2);border-radius:99px;">
+        <div class="competency-current" style="width:27%"></div>
+        <div class="competency-target-marker" style="left:80%"></div>
+      </div>
+    </div>
+    <div class="competency-item">
+      <div class="competency-header">
+        <span class="competency-name">커뮤니케이션 & 영향력</span>
+        <span class="competency-vals">41% → 목표 75%</span>
+      </div>
+      <div class="competency-track" style="height:6px;background:var(--surface2);border-radius:99px;">
+        <div class="competency-current" style="width:41%"></div>
+        <div class="competency-target-marker" style="left:75%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     GOALS SCREEN
+═══════════════════════════════════ -->
+<div class="screen" id="screen-goals">
+  <div class="page-header">
+    <div class="page-title">목표 관리</div>
+    <div class="page-sub">Yearly → Monthly → Daily</div>
+  </div>
+
+  <div class="time-tabs">
+    <div class="time-tab active" onclick="switchGoalTab('yearly', this)">Yearly</div>
+    <div class="time-tab" onclick="switchGoalTab('monthly', this)">Monthly</div>
+    <div class="time-tab" onclick="switchGoalTab('daily', this)">Daily</div>
+  </div>
+
+  <!-- YEARLY -->
+  <div class="goal-panel active" id="goal-yearly">
+    <div class="section-label">1년 목표</div>
+
+    <div class="yearly-goal-card">
+      <div class="goal-status-row">
+        <span class="badge badge-blue">진행중</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--text-muted);">~2026.06</span>
+      </div>
+      <div class="goal-title">시니어 레벨 성장 & 리더십 역량 첫 경험 확보</div>
+      <div class="goal-progress-row">
+        <span style="font-size:12px;color:var(--text-secondary);">전체 달성률</span>
+        <span class="goal-pct">34%</span>
+      </div>
+      <div class="progress-wrap" style="height:8px;"><div class="progress-bar" style="width:34%"></div></div>
+      <div class="divider"></div>
+      <div class="goal-meta">
+        <div class="goal-meta-item">📂 <span>Performance Objective</span></div>
+        <div class="goal-meta-item">📅 <span>2026.06.30</span></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px;">3년 목표</div>
+    <div class="yearly-goal-card">
+      <div class="goal-status-row">
+        <span class="badge badge-gray">예정</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--text-muted);">~2028.06</span>
+      </div>
+      <div class="goal-title">팀 리드 역할 수행 & 도메인 전문성 심화</div>
+      <div class="goal-progress-row">
+        <span style="font-size:12px;color:var(--text-secondary);">전체 달성률</span>
+        <span class="goal-pct" style="color:var(--text-muted);">—</span>
+      </div>
+      <div class="progress-wrap" style="height:8px;"><div class="progress-bar" style="width:0%"></div></div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px;">5년 목표</div>
+    <div class="yearly-goal-card">
+      <div class="goal-status-row">
+        <span class="badge badge-gray">예정</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--text-muted);">~2030.06</span>
+      </div>
+      <div class="goal-title">독립적 프로덕트 오너십 & 외부 영향력 확장</div>
+      <div class="goal-progress-row">
+        <span style="font-size:12px;color:var(--text-secondary);">전체 달성률</span>
+        <span class="goal-pct" style="color:var(--text-muted);">—</span>
+      </div>
+      <div class="progress-wrap" style="height:8px;"><div class="progress-bar" style="width:0%"></div></div>
+    </div>
+    <div class="gap"></div>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="goal-panel" id="goal-monthly">
+    <div class="section-label">6월 마일스톤</div>
+
+    <div class="milestone-card">
+      <div class="milestone-header">
+        <span class="milestone-title">📚 도메인 전문성 심화</span>
+        <span class="milestone-month">Jun 2025</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check done"></div>
+        <span class="milestone-text done">업계 뉴스레터 구독 3개 설정</span>
+        <span class="milestone-count">✓</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check done"></div>
+        <span class="milestone-text done">관련 도서 1권 완독</span>
+        <span class="milestone-count">✓</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check"></div>
+        <span class="milestone-text">블로그 포스트 작성 3편</span>
+        <span class="milestone-count">1/3</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check"></div>
+        <span class="milestone-text">OO 강의 수강 완료</span>
+        <span class="milestone-count">0/1</span>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--text-secondary);">마일스톤 달성률</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--accent);">50%</span>
+      </div>
+      <div class="progress-wrap" style="height:6px;margin-top:8px;"><div class="progress-bar" style="width:50%"></div></div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="milestone-card">
+      <div class="milestone-header">
+        <span class="milestone-title">🤝 리더십 역량 개발</span>
+        <span class="milestone-month">Jun 2025</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check done"></div>
+        <span class="milestone-text done">팀 온보딩 가이드 문서 작성</span>
+        <span class="milestone-count">✓</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check"></div>
+        <span class="milestone-text">주니어 1명 멘토링 1회</span>
+        <span class="milestone-count">0/1</span>
+      </div>
+      <div class="milestone-item" onclick="toggleMilestone(this)">
+        <div class="milestone-check"></div>
+        <span class="milestone-text">팀 미팅 아젠다 주도 설정 2회</span>
+        <span class="milestone-count">0/2</span>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--text-secondary);">마일스톤 달성률</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--accent);">33%</span>
+      </div>
+      <div class="progress-wrap" style="height:6px;margin-top:8px;"><div class="progress-bar" style="width:33%"></div></div>
+    </div>
+
+    <div class="gap"></div>
+  </div>
+
+  <!-- DAILY -->
+  <div class="goal-panel" id="goal-daily">
+    <div class="gap-sm"></div>
+    <div class="daily-date-header">
+      <span class="daily-date-label">📅 오늘 · 6월 10일 화요일</span>
+      <button class="daily-add-btn" onclick="openAddTask()">+</button>
+    </div>
+
+    <div class="daily-task" onclick="toggleDaily(this)">
+      <div class="action-checkbox checked" style="margin-top:2px;"></div>
+      <div class="daily-task-body">
+        <div class="daily-task-title done">팀 회의에서 의견을 먼저 제시해보기</div>
+        <div class="daily-task-tags">
+          <span class="badge badge-blue" style="font-size:9px;">루틴</span>
+          <span class="badge badge-purple" style="font-size:9px;">의사결정</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="daily-task" onclick="toggleDaily(this)">
+      <div class="action-checkbox" style="margin-top:2px;"></div>
+      <div class="daily-task-body">
+        <div class="daily-task-title">동료에게 내 업무 경과를 1문단으로 설명하기</div>
+        <div class="daily-task-tags">
+          <span class="badge badge-blue" style="font-size:9px;">루틴</span>
+          <span class="badge badge-green" style="font-size:9px;">커뮤니케이션</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="daily-task" onclick="toggleDaily(this)">
+      <div class="action-checkbox" style="margin-top:2px;"></div>
+      <div class="daily-task-body">
+        <div class="daily-task-title">업계 뉴스레터 1개 읽고 인사이트 메모하기</div>
+        <div class="daily-task-tags">
+          <span class="badge badge-blue" style="font-size:9px;">루틴</span>
+          <span class="badge badge-yellow" style="font-size:9px;">도메인 전문성</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="daily-task" onclick="toggleDaily(this)">
+      <div class="action-checkbox" style="margin-top:2px;"></div>
+      <div class="daily-task-body">
+        <div class="daily-task-title">작은 결정 3분 안에 내리는 연습 (하루 3회)</div>
+        <div class="daily-task-tags">
+          <span class="badge badge-blue" style="font-size:9px;">루틴</span>
+          <span class="badge badge-purple" style="font-size:9px;">의사결정</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div style="padding: 0 20px;">
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="openAddTask()">
+        + 오늘 할 일 추가
+      </button>
+    </div>
+    <div class="gap"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     RETROSPECTIVE SCREEN
+═══════════════════════════════════ -->
+<div class="screen" id="screen-retro">
+  <div class="page-header">
+    <div class="page-title">회고 기록</div>
+    <div class="page-sub">쌓인 회고가 나를 만들어가요</div>
+  </div>
+
+  <!-- AI Pattern -->
+  <div class="gap-sm"></div>
+  <div class="pattern-card">
+    <div class="pattern-header">
+      <span style="font-size:16px;">✦</span>
+      <span class="pattern-label">AI 패턴 분석</span>
+    </div>
+    <div class="pattern-title">최근 3주 회고에서 발견한 패턴</div>
+    <div class="pattern-text">의사결정 장면에서 <strong style="color:#fff;">완벽주의로 인한 지연</strong>이 5회 반복됐어요. 반면 커뮤니케이션 시도 후에는 긍정적인 결과가 이어지는 패턴이 보여요. 작은 결정부터 속도를 높여보는 걸 권장해요.</div>
+    <div class="pattern-chips">
+      <span class="pattern-chip">의사결정 ↓</span>
+      <span class="pattern-chip">커뮤니케이션 ↑</span>
+      <span class="pattern-chip">완벽주의 주의</span>
+    </div>
+  </div>
+
+  <!-- KPT write -->
+  <div class="section-label">오늘의 회고</div>
+  <div class="kpt-write-card">
+    <div class="kpt-tabs">
+      <div class="kpt-tab k active" onclick="selectKpt(this,'k')">Keep</div>
+      <div class="kpt-tab p" onclick="selectKpt(this,'p')">Problem</div>
+      <div class="kpt-tab t" onclick="selectKpt(this,'t')">Try</div>
+      <div class="kpt-tab etc" onclick="selectKpt(this,'etc')">기타</div>
+    </div>
+    <textarea class="kpt-textarea" id="kpt-input" placeholder="오늘 잘한 일, 앞으로도 계속하고 싶은 것을 적어보세요..."></textarea>
+    <div class="kpt-submit-row">
+      <span class="kpt-hint">AI가 키워드와 연결해드려요</span>
+      <button class="btn btn-primary" style="padding:9px 16px;font-size:13px;" onclick="saveRetro()">저장하기</button>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="retro-filter">
+    <div class="tag active" onclick="filterRetro(this,'all')">전체</div>
+    <div class="tag" onclick="filterRetro(this,'전략가')">전략가</div>
+    <div class="tag" onclick="filterRetro(this,'의사결정')">의사결정</div>
+    <div class="tag" onclick="filterRetro(this,'커뮤니케이션')">커뮤니케이션</div>
+    <div class="tag" onclick="filterRetro(this,'학습')">학습</div>
+  </div>
+
+  <!-- Feed -->
+  <div id="retro-feed">
+    <div class="retro-item" data-tags="커뮤니케이션,전략가">
+      <div class="retro-item-header">
+        <span class="retro-item-date">6월 9일 월요일</span>
+        <span class="retro-item-type K">Keep</span>
+      </div>
+      <div class="retro-item-text">팀 미팅에서 먼저 의견을 제시했는데 팀장님이 긍정적으로 받아주셔서 자신감이 생겼다.</div>
+      <div class="retro-item-tags">
+        <span class="tag" style="font-size:11px;padding:3px 8px;">전략가</span>
+        <span class="tag" style="font-size:11px;padding:3px 8px;">커뮤니케이션</span>
+      </div>
+    </div>
+
+    <div class="retro-item" data-tags="의사결정">
+      <div class="retro-item-header">
+        <span class="retro-item-date">6월 9일 월요일</span>
+        <span class="retro-item-type P">Problem</span>
+      </div>
+      <div class="retro-item-text">보고서 초안을 작성하는 데 너무 오래 걸렸다. 완벽하게 쓰려는 성향이 또 발목을 잡았다.</div>
+      <div class="retro-item-tags">
+        <span class="tag" style="font-size:11px;padding:3px 8px;">의사결정</span>
+      </div>
+    </div>
+
+    <div class="retro-item" data-tags="학습,의사결정">
+      <div class="retro-item-header">
+        <span class="retro-item-date">6월 9일 월요일</span>
+        <span class="retro-item-type T">Try</span>
+      </div>
+      <div class="retro-item-text">다음엔 초안 완성에 30분 타이머 걸어보기. 완성보다 방향이 맞는지 먼저 확인하는 게 낫겠다.</div>
+      <div class="retro-item-tags">
+        <span class="tag" style="font-size:11px;padding:3px 8px;">의사결정</span>
+        <span class="tag" style="font-size:11px;padding:3px 8px;">학습</span>
+      </div>
+    </div>
+
+    <div class="retro-item" data-tags="학습,전략가">
+      <div class="retro-item-header">
+        <span class="retro-item-date">6월 8일 일요일</span>
+        <span class="retro-item-type K">Keep</span>
+      </div>
+      <div class="retro-item-text">업계 뉴스레터를 읽고 인사이트를 Notion에 정리했다. 꾸준히 이어가고 싶은 습관.</div>
+      <div class="retro-item-tags">
+        <span class="tag" style="font-size:11px;padding:3px 8px;">학습</span>
+        <span class="tag" style="font-size:11px;padding:3px 8px;">전략가</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PROFILE SCREEN
+═══════════════════════════════════ -->
+<div class="screen" id="screen-profile">
+
+  <div class="profile-hero">
+    <div class="profile-avatar">홍</div>
+    <div class="profile-info">
+      <div class="profile-name">홍길동</div>
+      <div class="profile-role">SaaS 스타트업 · <strong>프로덕트 매니저</strong> · 3~5년차</div>
+    </div>
+  </div>
+
+  <div class="section-label">나를 정의하는 키워드</div>
+  <div class="keyword-wrap">
+    <span class="tag active">전략가</span>
+    <span class="tag active">학습자</span>
+    <span class="tag active">분석형 크리에이터</span>
+    <span class="tag active">성장 지향</span>
+  </div>
+
+  <!-- Diagnosis summary -->
+  <div class="section-label">진단 요약</div>
+  <div class="card" style="margin:0 20px;">
+    <div style="font-size:13px;line-height:1.7;color:var(--text-secondary);">
+      전략적 사고와 분석 역량은 탁월하지만, 커리어 방향성에 대한 확신이 낮고 실행 측면에서 자신감이 부족한 상태입니다.
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:16px;">
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">강점</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+          복잡한 문제 구조화<br>빠른 학습과 적응력<br>깊은 분석·수집 성향
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--red);margin-bottom:6px;">개선 영역</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+          의사결정 속도<br>자기 표현·영향력
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Competency Gap -->
+  <div class="section-label">역량 갭 분석</div>
+  <div class="card" style="margin:0 20px;">
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;display:flex;gap:12px;align-items:center;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:3px;background:var(--accent);border-radius:2px;display:inline-block;"></span>현재</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:3px;background:var(--text-muted);border-radius:2px;display:inline-block;"></span>목표</span>
+    </div>
+
+    <div class="skill-bar-item">
+      <div class="skill-bar-header">
+        <span class="skill-bar-name">의사결정 & 실행력</span>
+        <span class="skill-bar-vals"><span class="skill-bar-val-current">27%</span> <span class="skill-bar-val-target">/ 80%</span></span>
+      </div>
+      <div class="skill-track">
+        <div class="skill-fill" style="width:27%"></div>
+      </div>
+      <div class="skill-gap-label">
+        <span class="skill-gap-text">우선순위: 높음</span>
+        <span class="skill-gap-text">GAP -53%</span>
+      </div>
+    </div>
+
+    <div class="skill-bar-item">
+      <div class="skill-bar-header">
+        <span class="skill-bar-name">커뮤니케이션 & 영향력</span>
+        <span class="skill-bar-vals"><span class="skill-bar-val-current">41%</span> <span class="skill-bar-val-target">/ 75%</span></span>
+      </div>
+      <div class="skill-track">
+        <div class="skill-fill" style="width:41%"></div>
+      </div>
+      <div class="skill-gap-label">
+        <span class="skill-gap-text">우선순위: 높음</span>
+        <span class="skill-gap-text">GAP -34%</span>
+      </div>
+    </div>
+
+    <div class="skill-bar-item">
+      <div class="skill-bar-header">
+        <span class="skill-bar-name">리더십 & 팀 빌딩</span>
+        <span class="skill-bar-vals"><span class="skill-bar-val-current">37%</span> <span class="skill-bar-val-target">/ 70%</span></span>
+      </div>
+      <div class="skill-track">
+        <div class="skill-fill" style="width:37%"></div>
+      </div>
+      <div class="skill-gap-label">
+        <span class="skill-gap-text">우선순위: 중간</span>
+        <span class="skill-gap-text">GAP -33%</span>
+      </div>
+    </div>
+
+    <div class="skill-bar-item" style="margin-bottom:0;">
+      <div class="skill-bar-header">
+        <span class="skill-bar-name">도메인 전문성 심화</span>
+        <span class="skill-bar-vals"><span class="skill-bar-val-current">57%</span> <span class="skill-bar-val-target">/ 85%</span></span>
+      </div>
+      <div class="skill-track">
+        <div class="skill-fill" style="width:57%"></div>
+      </div>
+      <div class="skill-gap-label">
+        <span class="skill-gap-text">우선순위: 중간</span>
+        <span class="skill-gap-text">GAP -28%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Career Roadmap -->
+  <div class="section-label">커리어 로드맵</div>
+
+  <div class="roadmap-item">
+    <div class="roadmap-line-wrap">
+      <div class="roadmap-dot"></div>
+      <div class="roadmap-line"></div>
+    </div>
+    <div class="roadmap-body">
+      <div class="roadmap-year">1년 후 · 2026</div>
+      <div class="roadmap-text">시니어 레벨 성장, 리더십 역량 첫 경험 확보</div>
+      <div style="margin-top:6px;"><span class="badge badge-blue">진행중 34%</span></div>
+    </div>
+  </div>
+
+  <div class="roadmap-item">
+    <div class="roadmap-line-wrap">
+      <div class="roadmap-dot future"></div>
+      <div class="roadmap-line"></div>
+    </div>
+    <div class="roadmap-body">
+      <div class="roadmap-year">3년 후 · 2028</div>
+      <div class="roadmap-text">팀 리드 역할 수행, 도메인 전문성 심화</div>
+      <div style="margin-top:6px;"><span class="badge badge-gray">예정</span></div>
+    </div>
+  </div>
+
+  <div class="roadmap-item">
+    <div class="roadmap-line-wrap">
+      <div class="roadmap-dot future"></div>
+    </div>
+    <div class="roadmap-body">
+      <div class="roadmap-year">5년 후 · 2030</div>
+      <div class="roadmap-text">독립적 프로덕트 오너십, 외부 영향력 확장</div>
+      <div style="margin-top:6px;"><span class="badge badge-gray">예정</span></div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     BOTTOM NAV
+═══════════════════════════════════ -->
+<nav class="nav">
+  <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>홈</span>
+  </button>
+  <button class="nav-item" id="nav-goals" onclick="switchTab('goals')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="2"/>
+    </svg>
+    <span>목표</span>
+  </button>
+  <button class="nav-item" id="nav-retro" onclick="switchTab('retro')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+    <span>회고</span>
+  </button>
+  <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span>프로필</span>
+  </button>
+</nav>
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="modal-add" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">오늘 할 일 추가</div>
+    <input class="modal-input" id="task-input" placeholder="할 일을 입력하세요" />
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="tag" onclick="selectModalTag(this)">의사결정</span>
+      <span class="tag" onclick="selectModalTag(this)">커뮤니케이션</span>
+      <span class="tag" onclick="selectModalTag(this)">리더십</span>
+      <span class="tag" onclick="selectModalTag(this)">도메인 전문성</span>
+      <span class="tag" onclick="selectModalTag(this)">루틴</span>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="addTask()">추가하기</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,'0');
+  const m = now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m;
+}
+updateClock(); setInterval(updateClock, 10000);
+
+// ── DATE ──
+const days = ['일','월','화','수','목','금','토'];
+const now = new Date();
+document.getElementById('home-date').textContent =
+  now.getFullYear() + '년 ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일 ' + days[now.getDay()] + '요일';
+
+// ── STREAK ──
+const dayLabels = ['월','화','수','목','금','토','일'];
+const doneMap = [true, true, true, true, false, false, false];
+const streakWrap = document.getElementById('streak-days');
+dayLabels.forEach((d, i) => {
+  const el = document.createElement('div');
+  el.className = 'streak-day' + (doneMap[i] ? ' done' : (i === 4 ? ' today' : ''));
+  el.innerHTML = d;
+  streakWrap.appendChild(el);
+});
+
+// ── TAB SWITCH ──
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── GOAL TABS ──
+function switchGoalTab(tab, el) {
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.goal-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('goal-' + tab).classList.add('active');
+}
+
+// ── TOGGLE ACTION ITEM ──
+function toggleAction(el) {
+  const cb = el.querySelector('.action-checkbox');
+  const txt = el.querySelector('.action-text');
+  const isChecked = cb.classList.toggle('checked');
+  txt.classList.toggle('done', isChecked);
+  updateActionCount();
+}
+
+function updateActionCount() {
+  const total = document.querySelectorAll('#screen-home .action-item').length;
+  const done = document.querySelectorAll('#screen-home .action-checkbox.checked').length;
+  document.querySelector('#screen-home .action-card .badge').textContent = total + '개 중 ' + done + '개 완료';
+}
+
+// ── TOGGLE MILESTONE ──
+function toggleMilestone(el) {
+  const check = el.querySelector('.milestone-check');
+  const text = el.querySelector('.milestone-text');
+  check.classList.toggle('done');
+  text.classList.toggle('done');
+}
+
+// ── TOGGLE DAILY TASK ──
+function toggleDaily(el) {
+  const cb = el.querySelector('.action-checkbox');
+  const title = el.querySelector('.daily-task-title');
+  const isChecked = cb.classList.toggle('checked');
+  title.classList.toggle('done', isChecked);
+}
+
+// ── KPT SELECT ──
+const kptPlaceholders = {
+  k: '오늘 잘한 일, 앞으로도 계속하고 싶은 것을 적어보세요...',
+  p: '아쉬웠던 점, 개선하고 싶은 것을 적어보세요...',
+  t: '다음에 시도해보고 싶은 것을 적어보세요...',
+  etc: '오늘 있었던 일을 자유롭게 적어보세요...'
+};
+let currentKpt = 'k';
+function selectKpt(el, type) {
+  document.querySelectorAll('.kpt-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentKpt = type;
+  document.getElementById('kpt-input').placeholder = kptPlaceholders[type];
+}
+
+// ── SAVE RETRO ──
+function saveRetro() {
+  const txt = document.getElementById('kpt-input').value.trim();
+  if (!txt) return;
+  const typeMap = { k: 'Keep', p: 'Problem', t: 'Try', etc: '기타' };
+  const classMap = { k: 'K', p: 'P', t: 'T', etc: 'ETC' };
+  const item = document.createElement('div');
+  item.className = 'retro-item';
+  item.setAttribute('data-tags','');
+  const today = now.getMonth()+1 + '월 ' + now.getDate() + '일';
+  item.innerHTML = `
+    <div class="retro-item-header">
+      <span class="retro-item-date">${today}</span>
+      <span class="retro-item-type ${classMap[currentKpt]}">${typeMap[currentKpt]}</span>
+    </div>
+    <div class="retro-item-text">${txt}</div>
+    <div class="retro-item-tags"></div>`;
+  document.getElementById('retro-feed').prepend(item);
+  document.getElementById('kpt-input').value = '';
+  showToast('✦ 저장 완료! AI가 분석 중이에요');
+}
+
+// ── FILTER RETRO ──
+function filterRetro(el, tag) {
+  document.querySelectorAll('.retro-filter .tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.retro-item').forEach(item => {
+    if (tag === 'all') { item.style.display = ''; return; }
+    const tags = item.getAttribute('data-tags') || '';
+    item.style.display = tags.includes(tag) ? '' : 'none';
+  });
+}
+
+// ── MODAL ──
+function openAddTask() {
+  document.getElementById('modal-add').classList.add('open');
+  setTimeout(() => document.getElementById('task-input').focus(), 100);
+}
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-add'))
+    document.getElementById('modal-add').classList.remove('open');
+}
+function selectModalTag(el) {
+  el.classList.toggle('active');
+}
+function addTask() {
+  const txt = document.getElementById('task-input').value.trim();
+  if (!txt) return;
+  const selectedTags = [...document.querySelectorAll('#modal-add .tag.active')].map(t => t.textContent);
+  const taskEl = document.createElement('div');
+  taskEl.className = 'daily-task';
+  taskEl.onclick = function() { toggleDaily(this); };
+  const tagHTML = selectedTags.map(t => `<span class="badge badge-blue" style="font-size:9px;">${t}</span>`).join('');
+  taskEl.innerHTML = `
+    <div class="action-checkbox" style="margin-top:2px;"></div>
+    <div class="daily-task-body">
+      <div class="daily-task-title">${txt}</div>
+      <div class="daily-task-tags">${tagHTML}</div>
+    </div>`;
+  const addBtn = document.querySelector('#goal-daily .btn-secondary').parentNode;
+  addBtn.parentNode.insertBefore(taskEl, addBtn);
+  document.getElementById('task-input').value = '';
+  document.querySelectorAll('#modal-add .tag').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-add').classList.remove('open');
+  showToast('✓ 할 일이 추가됐어요');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
